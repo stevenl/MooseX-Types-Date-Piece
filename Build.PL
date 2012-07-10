@@ -23,6 +23,14 @@ my $builder = Module::Build->new(
         'MooseX::Types' => 0,
         'MooseX::Types::Moose' => 0,
     },
+    create_makefile_pl => 'traditional',
+    meta_merge => {
+        resources => {
+            homepage   => 'http://search.cpan.org/dist/MooseX-Types-Date-Piece/',
+            bugtracker => 'http://github.com/stevenl/moosex-types-date-piece/issues',
+            repository => 'http://github.com/stevenl/moosex-types-date-piece',
+        }
+    },
     add_to_cleanup      => [ 'MooseX-Types-Date-Piece-*' ],
 );
 
