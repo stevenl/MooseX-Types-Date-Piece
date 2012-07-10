@@ -23,8 +23,15 @@ has 'date_from_arrayref' => (
     coerce => 1,
 );
 
+has 'str_from_date' => (
+    is  => 'ro',
+    isa => 'Str',
+    coerce => 1,
+);
+
 package main;
 
+use Date::Piece ();
 use Test::More;
 use Test::Fatal;
 
@@ -34,6 +41,7 @@ $f = Foo->new(
     date_from_str1 => '2012-07-09',
     date_from_str2 => '20120709',
     date_from_arrayref => [2012, 7, 9],
+    str_from_date => Date::Piece::date('2012-07-09'),
 );
 
 ok( $f->date_from_str1->isa('Date::Piece') );
@@ -44,6 +52,9 @@ ok( $f->date_from_str2 eq '2012-07-09' );
 
 ok( $f->date_from_arrayref->isa('Date::Piece') );
 ok( $f->date_from_arrayref eq '2012-07-09' );
+
+ok( ! ref $f->str_from_date );
+ok( $f->str_from_date eq '2012-07-09' );
 
 # invalid arg format
 like( exception { Foo->new( date_from_str1 => 'apocalypse' ) },     qr/^invalid date/ );

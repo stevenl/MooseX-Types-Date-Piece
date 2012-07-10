@@ -1,5 +1,8 @@
 Revision history for MooseX-Types-Date-Piece
 
+0.02    2012-07-10
+        Added a coercion from Date::Piece back to Str
+
 0.01    2012-07-09
         First version.
 

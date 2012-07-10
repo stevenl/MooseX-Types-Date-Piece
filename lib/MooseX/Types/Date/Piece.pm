@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Carp 'croak';
 use Date::Piece qw( date years months weeks days );
@@ -23,6 +23,9 @@ class_type 'Date::Piece';
 coerce 'Date::Piece',
     from Str,      via { date($_) },
     from ArrayRef, via { date($_) };
+
+coerce Str,
+    from 'Date::Piece', via {"$_"};
 
 class_type 'Date::Piece::Duration', { class => 'Date::Piece::unit_base' };
 
@@ -63,6 +66,12 @@ MooseX::Types::Date::Piece - Date::Piece type and coercions for Moose.
         coerce  => 1,
     );
 
+    has 'date_str' => (
+        is      => 'ro',
+        isa     => 'Str',
+        coerce  => 1,
+    );
+
     has 'duration' => (
         is      => 'ro',
         isa     => 'Date::Piece::Duration',
@@ -74,6 +83,7 @@ MooseX::Types::Date::Piece - Date::Piece type and coercions for Moose.
     my $f = Foo->new(
         date     => '2012-07-09', # or '20120709'
         duration => '1day',       # or '2weeks', '3 months', '4 YEARS'
+        date_str => Date::Piece::date('20120709'),
     );
 
 =head1 DESCRIPTION
@@ -91,6 +101,7 @@ A subtype of C<Object> that isa L<Date::Piece>.
 It includes coercions from C<Str> and C<ArrayRef> in the same format as those
 accepted by the Date::Piece constructor. An exception will be thrown if the
 coercion fails due to an invalid argument format or invalid dates.
+It also includes a coercion from C<Date::Piece> back to C<Str>.
 
 =item Date::Piece::Duration
 
@@ -112,12 +123,9 @@ Steven Lee, C<< <stevenl at cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright E<copy> 2012 Steven Lee.
+Copyright E<copy> 2012 Steven Lee. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
+under the same terms as Perl itself.
 
 =cut
