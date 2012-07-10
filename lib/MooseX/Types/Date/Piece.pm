@@ -37,9 +37,7 @@ coerce 'Date::Piece::Duration',
 
         my ( $val, $unit ) = $str =~ m/^([+-]*\d+)\s*(\w+)$/;
 
-        ( defined $val && defined $unit )
-            || croak "invalid duration '$str'";
-        ( defined $DATE_DURATION{$unit} )
+        ( defined $val && defined $unit && defined $DATE_DURATION{$unit} )
             || croak "invalid duration '$str'";
 
         return $val * $DATE_DURATION{$unit}->();
@@ -81,35 +79,59 @@ MooseX::Types::Date::Piece - Date::Piece type and coercions for Moose.
     # ...
 
     my $f = Foo->new(
-        date     => '2012-07-09', # or '20120709'
-        duration => '1day',       # or '2weeks', '3 months', '4 YEARS'
+        date     => '2012-07-09',
+        duration => '1day',
         date_str => Date::Piece::date('20120709'),
     );
 
 =head1 DESCRIPTION
 
-This module provides a Moose type constraint for Date::Piece.
+This module provides Moose type constraints and coercions related to L<Date::Piece>.
 
 =head1 TYPES
 
 =over
 
-=item Date::Piece
+=item L<Date::Piece>
 
-A subtype of C<Object> that isa L<Date::Piece>.
+A class type for L<Date::Piece>.
 
-It includes coercions from C<Str> and C<ArrayRef> in the same format as those
-accepted by the Date::Piece constructor. An exception will be thrown if the
-coercion fails due to an invalid argument format or invalid dates.
-It also includes a coercion from C<Date::Piece> back to C<Str>.
+=over
+
+=item coerce from C<Str>
+
+Uses L<Date::Piece/date>, where the string is formatted as C<'2012-12-31'> or C<'20121231'>.
+
+=item coerce from C<ArrayRef>
+
+Uses L<Date::Piece/date>, where the array is formatted as C<[2012, 12, 31]>.
+
+=back
+
+An exception is thrown if the value to be coerced is not in a valid format
+or if the date is invalid.
 
 =item Date::Piece::Duration
 
-A subtype of C<Object> that isa C<Date::Piece::unit_base>. Subtypes of
-C<unit_base> include C<day_unit>, C<week_unit>, C<month_unit> and C<year_unit>.
-Though these types are not explicitly documented, they may be created by the
-C<days>, C<weeks>, C<months> and C<years> functions, respectively, and are
-useful for math on the date objects.
+A class type for C<Date::Piece::unit_base>. Subtypes of C<unit_base> include
+C<day_unit>, C<week_unit>, C<month_unit> and C<year_unit>.
+These objects are normally created using the C<days>, C<weeks>, C<months>
+and C<years> constants, and may be multiplied by an integer. They may also be
+used for date math by adding (or subtracting) them to C<Date::Piece> objects.
+See L<Date::Piece/Year-Month-and-etc-units> for more information.
+
+=over
+
+=item coerce from C<Str>
+
+The string must specify the number and unit,
+e.g. C<'1day'>, C<'2weeks'>, C<'3 months'>, C<'4 YEARS'>.
+
+=item coerce from C<Int>
+
+The integer value will be interpreted as the number of C<days>.
+
+=back
 
 =back
 
