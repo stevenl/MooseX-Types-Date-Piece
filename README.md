@@ -1,6 +1,8 @@
-MooseX-Types-Date-Piece
+MooseX::Types::Date::Piece
+==========================
 
-INSTALLATION
+Installation
+------------
 
 To install this module, run the following commands:
 
@@ -9,7 +11,15 @@ To install this module, run the following commands:
 	./Build test
 	./Build install
 
-LICENSE AND COPYRIGHT
+Or, if you don't have Module::Build installed, run the following commands instead:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+License and Copyright
+---------------------
 
 Copyright (C) 2012 Steven Lee. All rights reserved.
 
