@@ -4,11 +4,10 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Carp 'croak';
 use Date::Piece qw( date years months weeks days );
-use MooseX::Types;
 use MooseX::Types::Moose qw( ArrayRef Int Str );
 
 my %DATE_DURATION = (
@@ -18,30 +17,35 @@ my %DATE_DURATION = (
     years  => \&years,
 );
 
+use MooseX::Types -declare => [qw( Date Duration )];
+
 class_type 'Date::Piece';
-
-coerce 'Date::Piece',
-    from Str,      via { date($_) },
-    from ArrayRef, via { date($_) };
-
-coerce Str,
-    from 'Date::Piece', via {"$_"};
-
 class_type 'Date::Piece::Duration', { class => 'Date::Piece::unit_base' };
 
-coerce 'Date::Piece::Duration',
-    from Int, via { $_ * days },
-    from Str, via {
-        my $str = lc $_;
-        $str =~ s/([^s])$/$1s/; # ensure there is an 's' at the end
+subtype Date,     as 'Date::Piece';
+subtype Duration, as 'Date::Piece::Duration';
 
-        my ( $val, $unit ) = $str =~ m/^([+-]*\d+)\s*(\w+)$/;
+for my $type ('Date::Piece', Date) {
+    coerce $type,
+        from Str,      via { date($_) },
+        from ArrayRef, via { date($_) };
+}
 
-        ( defined $val && defined $unit && defined $DATE_DURATION{$unit} )
-            || croak "invalid duration '$str'";
+for my $type ('Date::Piece::Duration', Duration) {
+    coerce $type,
+        from Int, via { $_ * days },
+        from Str, via {
+            my $str = lc $_;
+            $str =~ s/([^s])$/$1s/; # ensure there is an 's' at the end
 
-        return $val * $DATE_DURATION{$unit}->();
-    };
+            my ( $val, $unit ) = $str =~ m/^([+-]*\d+)\s*(\w+)$/;
+
+            ( defined $val && defined $unit && defined $DATE_DURATION{$unit} )
+                || croak "invalid duration '$str'";
+
+            return $val * $DATE_DURATION{$unit}->();
+        };
+}
 
 1;
 
@@ -56,23 +60,17 @@ MooseX::Types::Date::Piece - Date::Piece type and coercions for Moose.
     package Foo;
 
     use Moose;
-    use MooseX::Types::Date::Piece;
+    use MooseX::Types::Date::Piece qw( Date Duration );
 
     has 'date' => (
         is      => 'ro',
-        isa     => 'Date::Piece',
-        coerce  => 1,
-    );
-
-    has 'date_str' => (
-        is      => 'ro',
-        isa     => 'Str',
+        isa     => Date,
         coerce  => 1,
     );
 
     has 'duration' => (
         is      => 'ro',
-        isa     => 'Date::Piece::Duration',
+        isa     => Duration,
         coerce  => 1,
     );
 
@@ -81,18 +79,22 @@ MooseX::Types::Date::Piece - Date::Piece type and coercions for Moose.
     my $f = Foo->new(
         date     => '2012-07-09',
         duration => '1day',
-        date_str => Date::Piece::date('20120709'),
     );
 
 =head1 DESCRIPTION
 
-This module provides Moose type constraints and coercions related to L<Date::Piece>.
+This module provides L<Moose> type constraints and coercions for using
+L<Date::Piece> objects as Moose attributes.
 
-=head1 TYPES
+=head1 EXPORTS
+
+The following type constants provided by L<MooseX::Types> must be explicitly
+imported. The full class name may also be used (as strings with quotes) without
+importing the constant declarations.
 
 =over
 
-=item L<Date::Piece>
+=item Date
 
 A class type for L<Date::Piece>.
 
@@ -111,12 +113,12 @@ Uses L<Date::Piece/date>, where the array is formatted as C<[2012, 12, 31]>.
 An exception is thrown if the value to be coerced is not in a valid format
 or if the date is invalid.
 
-=item Date::Piece::Duration
+=item Duration
 
-A class type for C<Date::Piece::unit_base>. Subtypes of C<unit_base> include
-C<day_unit>, C<week_unit>, C<month_unit> and C<year_unit>.
+A class type for C<Date::Piece::Duration>. Subtypes include C<day_unit>,
+C<week_unit>, C<month_unit> and C<year_unit>.
 These objects are normally created using the C<days>, C<weeks>, C<months>
-and C<years> constants, and may be multiplied by an integer. They may also be
+and C<years> constants and may be multiplied by an integer. They may also be
 used for date math by adding (or subtracting) them to C<Date::Piece> objects.
 See L<Date::Piece/Year-Month-and-etc-units> for more information.
 

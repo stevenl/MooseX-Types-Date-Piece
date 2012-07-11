@@ -1,5 +1,9 @@
 Revision history for MooseX-Types-Date-Piece
 
+0.03    2012-07-11
+        Added exportable type constants.
+        Removed coercion to Str.
+
 0.02    2012-07-10
         Added a coercion from Date::Piece back to Str.
         Refined the documentation and test cases.
